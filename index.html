@@ -1,6 +1,9 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
+  <link rel="manifest" href="manifest.json" />
+<link rel="icon" href="icon.png" />
+<meta name="theme-color" content="#e83e8c" />
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>Instagram Unfollowers Checker</title>
@@ -243,6 +246,12 @@
       a.download = "unfollowers_list.csv";
       a.click();
     }
+    
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('service-worker.js');
+    });
+  }
   </script>
 </body>
 </html>
