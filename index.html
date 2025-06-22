@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Instagram Unfollowers Checker</title>
+  <link rel="manifest" href="manifest.json" />
+  <style>
+    :root {
+      --primary: #e83e8c;
+      --bg-light: #ffffff;
+      --text-light: #212529;
+      --bg-dark: #121212;
+      --text-dark: #f8f9fa;
+      --card-dark: #1e1e1e;
+      --drop-bg: #f8f9fa;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      margin: 0;
+      background-color: var(--bg-light);
+      color: var(--text-light);
+      transition: background-color 0.3s ease, color 0.3s ease;
+    }
+
+    .dark-mode {
+      background-color: var(--bg-dark);
+      color: var(--text-dark);
+    }
+
+    .container {
+      max-width: 700px;
+      margin: 40px auto;
+      padding: 30px;
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .dark-mode .container {
+      background: var(--card-dark);
+    }
+
+    h1 {
+      text-align: center;
+      color: var(--primary);
+      margin-bottom: 20px;
+    }
+
+    .dropzone {
+      border: 2px dashed var(--primary);
+      padding: 30px;
+      border-radius: 12px;
+      text-align: center;
+      background: var(--drop-bg);
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    .dark-mode .dropzone {
+      background: #2a2a2a;
+    }
+
+    .dropzone.dragover {
+      background: #ffe3f0;
+    }
+
+    button {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 6px;
+      font-size: 16px;
+      margin-top: 20px;
+      margin-right: 10px;
+      cursor: pointer;
+    }
+
+    ul {
+      list-style: none;
+      padding-left: 0;
+      margin-top: 20px;
+    }
+
+    li {
+      background: #f1f3f5;
+      padding: 10px;
+      margin-bottom: 5px;
+      border-radius: 6px;
+    }
+
+    .dark-mode li {
+      background: #333;
+    }
+
+    @media (max-width: 600px) {
+      .container {
+        margin: 20px;
+        padding: 20px;
+      }
+
+      button {
+        width: 100%;
+        margin-bottom: 10px;
+      }
+      
+      .copyrightr {
+            text-align: center;
+            padding: 20px;
+            font-size: 12px;
+            opacity: 0.7;
+            margin-top: 30px;
+        }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Instagram Unfollowers Checker</h1>
+
+    <div id="dropzone" class="dropzone">
+      ⬇️ <strong>Tarik dan lepas</strong> file <code>following.html</code> & <code>followers_1.html</code> di sini
+      <br><small>(atau klik untuk memilih file)</small>
+      <input type="file" id="fileInput" multiple accept=".html" style="display:none;">
+    </div>
+
+    <button onclick="cekUnfollowers()">🔍 Cek Unfollowers</button>
+    <button onclick="simpanTXT()" id="txtBtn" style="display:none;">💾 Simpan ke TXT</button>
+    <button onclick="simpanCSV()" id="csvBtn" style="display:none;">📄 Simpan ke CSV</button>
+
+    <ul id="hasil"></ul>
+  </div>
+   <div class="copyrightr">
+            © 2025 KHAIR_572 | All Rights Reserved
+        </div>
+
+  <script>
+    let followersHTML = "", followingHTML = "";
+    let unfollowersGlobal = [];
+
+    // Dark mode otomatis
+    if (window.matchMedia("(prefers-color-scheme: dark)").matches) {
+      document.body.classList.add("dark-mode");
+    }
+
+    const dropzone = document.getElementById("dropzone");
+    const fileInput = document.getElementById("fileInput");
+
+    dropzone.addEventListener("click", () => fileInput.click());
+    fileInput.addEventListener("change", e => handleFiles(e.target.files));
+
+    dropzone.addEventListener("dragover", e => {
+      e.preventDefault();
+      dropzone.classList.add("dragover");
+    });
+
+    dropzone.addEventListener("dragleave", () => dropzone.classList.remove("dragover"));
+
+    dropzone.addEventListener("drop", e => {
+      e.preventDefault();
+      dropzone.classList.remove("dragover");
+      handleFiles(e.dataTransfer.files);
+    });
+
+    function handleFiles(files) {
+      [...files].forEach(file => {
+        const reader = new FileReader();
+        reader.onload = e => {
+          if (file.name.includes("followers")) {
+            followersHTML = e.target.result;
+          } else if (file.name.includes("following")) {
+            followingHTML = e.target.result;
+          }
+        };
+        reader.readAsText(file);
+      });
+    }
+
+    function extractUsernames(html) {
+      const parser = new DOMParser();
+      const doc = parser.parseFromString(html, "text/html");
+      const usernames = new Set();
+      doc.querySelectorAll("a").forEach(a => {
+        const name = a.textContent.trim();
+        if (name) usernames.add(name);
+      });
+      return usernames;
+    }
+
+    function cekUnfollowers() {
+      const hasil = document.getElementById("hasil");
+      hasil.innerHTML = "";
+      document.getElementById("txtBtn").style.display = "none";
+      document.getElementById("csvBtn").style.display = "none";
+
+      if (!followersHTML || !followingHTML) {
+        alert("Harap unggah kedua file: following.html dan followers_1.html");
+        return;
+      }
+
+      const following = extractUsernames(followingHTML);
+      const followers = extractUsernames(followersHTML);
+
+      const unfollowers = [...following].filter(u => !followers.has(u)).sort();
+      unfollowersGlobal = unfollowers;
+
+      if (unfollowers.length === 0) {
+        hasil.innerHTML = "<li>Tidak ada yang unfollow kamu 🎉</li>";
+      } else {
+        unfollowers.forEach(username => {
+          const li = document.createElement("li");
+          li.textContent = username;
+          hasil.appendChild(li);
+        });
+        document.getElementById("txtBtn").style.display = "inline-block";
+        document.getElementById("csvBtn").style.display = "inline-block";
+      }
+    }
+
+    function simpanTXT() {
+      const text = unfollowersGlobal.map((u, i) => `${i + 1}. ${u}`).join("\n");
+      const blob = new Blob(["Unfollowers Instagram:\n\n" + text], { type: "text/plain" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "unfollowers_list.txt";
+      a.click();
+    }
+
+    function simpanCSV() {
+      let csv = "No,Username\n";
+      unfollowersGlobal.forEach((u, i) => {
+        csv += `${i + 1},"${u}"\n`;
+      });
+      const blob = new Blob([csv], { type: "text/csv" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = "unfollowers_list.csv";
+      a.click();
+    }
+  </script>
+</body>
+</html>
