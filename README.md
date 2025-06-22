@@ -1,4 +1,3 @@
-#Fitur
 ✅ Drag & Drop file following.html dan followers_1.html
 ✅ UI Responsif dan modern
 ✅ Dark Mode otomatis
